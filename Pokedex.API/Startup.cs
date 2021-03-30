@@ -9,6 +9,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Pokedex.API.Mappers;
+using Pokedex.API.Models;
+using Pokedex.Application;
+using Pokedex.Domain;
 
 namespace Pokedex.API
 {
@@ -25,6 +29,8 @@ namespace Pokedex.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddScoped<IMapper<Pokemon, PokemonDto>, PokemonMapper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
