@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,7 +14,11 @@ using Microsoft.Extensions.Logging;
 using Pokedex.API.Mappers;
 using Pokedex.API.Models;
 using Pokedex.Application;
+using Pokedex.Application.Interfaces;
+using Pokedex.Application.Pokemon;
+using Pokedex.Application.Pokemon.PokeapiDtos;
 using Pokedex.Domain;
+using Pokedex.Infrastructure.WebRequests;
 
 namespace Pokedex.API
 {
@@ -30,7 +36,16 @@ namespace Pokedex.API
         {
             services.AddControllers();
 
+            services.AddHttpClient<IReader<string, PokemonSpecies>, PokeapiSpeciesReader>()
+                .ConfigurePrimaryHttpMessageHandler(handler =>
+                    new HttpClientHandler()
+                    {
+                        AutomaticDecompression = DecompressionMethods.Brotli
+                    });
+
             services.AddScoped<IMapper<Pokemon, PokemonDto>, PokemonMapper>();
+            services.AddScoped<IMapper<PokemonSpecies, Pokemon>, PokemonSpeciesMapper>();
+            services.AddScoped<IPokemonService, PokemonService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
