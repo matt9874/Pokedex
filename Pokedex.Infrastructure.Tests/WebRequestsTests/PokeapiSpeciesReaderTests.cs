@@ -48,8 +48,10 @@ namespace Pokedex.Infrastructure.Tests.WebRequestsTests
 
         private HttpMessageHandler GetSuccessfulResponseMessageHandler(string responseContent)
         {
-            var response = new HttpResponseMessage(HttpStatusCode.OK);
-            response.Content = new StringContent(responseContent);
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(responseContent)
+            };
 
             var mockSuccessfulResponseMessageHandler = new Mock<HttpMessageHandler>();
             mockSuccessfulResponseMessageHandler.Protected()
