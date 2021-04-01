@@ -51,6 +51,10 @@ namespace Pokedex.Application.Tests.PokemonTests
         [DataRow("name")]
         public async Task GetPokemon_ValidName_ResultOfMapperIsReturned(string name)
         {
+            var pokemonSpecies = new PokemonSpecies();
+            _mockPokemonReader.Setup(pr=>pr.Read(It.IsAny<string>()))
+                .ReturnsAsync(pokemonSpecies);
+
             var mappedPokemon = new Domain.Pokemon("name", "description", "habitat", true);
             _mockPokemonMapper.Setup(m => m.Map(It.IsAny<PokemonSpecies>()))
                 .Returns(mappedPokemon);
@@ -58,6 +62,18 @@ namespace Pokedex.Application.Tests.PokemonTests
             Domain.Pokemon returnedPokemon = await _pokemonService.GetPokemon(name);
 
             Assert.AreEqual(mappedPokemon, returnedPokemon);
+        }
+
+        [TestMethod]
+        [DataRow("name")]
+        public async Task GetPokemon_ReaderReturnsNull_NullIsReturned(string name)
+        {
+            _mockPokemonReader.Setup(pr => pr.Read(It.IsAny<string>()))
+                .ReturnsAsync((PokemonSpecies)null);
+
+            Domain.Pokemon returnedPokemon = await _pokemonService.GetPokemon(name);
+
+            Assert.IsNull(returnedPokemon);
         }
     }
 }

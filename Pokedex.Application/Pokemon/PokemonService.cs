@@ -26,6 +26,9 @@ namespace Pokedex.Application.Pokemon
 
             PokemonSpecies pokemonSpecies = await _pokemonReader.Read(name);
 
+            if (pokemonSpecies == null)
+                return null;
+
             return _pokemonMapper.Map(pokemonSpecies);
         }
     }
