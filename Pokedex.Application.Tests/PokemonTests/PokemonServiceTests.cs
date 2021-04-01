@@ -51,7 +51,7 @@ namespace Pokedex.Application.Tests.PokemonTests
         [DataRow("name")]
         public async Task GetPokemon_ValidName_ResultOfMapperIsReturned(string name)
         {
-            var mappedPokemon = new Domain.Pokemon("name", "description", Domain.Enums.Habitat.Rare, true);
+            var mappedPokemon = new Domain.Pokemon("name", "description", "habitat", true);
             _mockPokemonMapper.Setup(m => m.Map(It.IsAny<PokemonSpecies>()))
                 .Returns(mappedPokemon);
 

@@ -2,7 +2,6 @@
 using Pokedex.API.Mappers;
 using Pokedex.API.Models;
 using Pokedex.Domain;
-using Pokedex.Domain.Enums;
 
 namespace Pokedex.API.Tests.MappersTests
 {
@@ -14,7 +13,7 @@ namespace Pokedex.API.Tests.MappersTests
         private static readonly Pokemon _legendaryPokemonWithRareHabitat = new Pokemon(
             "pokemon name",
             "pokemon description",
-            Habitat.Rare,
+            "pokemon habitat",
             true
             );
 
@@ -49,7 +48,7 @@ namespace Pokedex.API.Tests.MappersTests
         public void Map_LegendaryPokemonWithRareHabitat_HasCorrectHabitat()
         {
             PokemonDto dto = _mapper.Map(_legendaryPokemonWithRareHabitat);
-            Assert.AreEqual("Rare", dto.Habitat);
+            Assert.AreEqual("pokemon habitat", dto.Habitat);
         }
 
         [TestMethod]

@@ -6,7 +6,6 @@ using Pokedex.API.Models;
 using Pokedex.Application;
 using Pokedex.Application.Pokemon;
 using Pokedex.Domain;
-using Pokedex.Domain.Enums;
 using System.Threading.Tasks;
 
 namespace Pokedex.API.Tests.ControllersTests
@@ -42,7 +41,7 @@ namespace Pokedex.API.Tests.ControllersTests
             Pokemon pokemon = new Pokemon(
                 "name",
                 "description",
-                Habitat.Cave,
+                "habitat",
                 true);
 
             _mockPokemonService.Setup(ps => ps.GetPokemon(It.IsAny<string>())).ReturnsAsync(pokemon);
@@ -50,7 +49,7 @@ namespace Pokedex.API.Tests.ControllersTests
             {
                 Name = "name",
                 Description = "description",
-                Habitat = "Cave",
+                Habitat = "habitat",
                 IsLegendary = true
             });
 
@@ -65,13 +64,13 @@ namespace Pokedex.API.Tests.ControllersTests
             Pokemon pokemon = new Pokemon(
                 "name",
                 "description",
-                Habitat.Cave,
+                "habitat",
                 true);
             PokemonDto pokemonDto = new PokemonDto()
             {
                 Name = "name",
                 Description = "description",
-                Habitat = "Cave",
+                Habitat = "habitat",
                 IsLegendary = true
             };
             _mockPokemonService.Setup(ps => ps.GetPokemon(It.IsAny<string>())).ReturnsAsync(pokemon);
