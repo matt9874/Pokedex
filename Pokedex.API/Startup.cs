@@ -17,6 +17,8 @@ using Pokedex.Application;
 using Pokedex.Application.Interfaces;
 using Pokedex.Application.Pokemon;
 using Pokedex.Application.Pokemon.PokeapiDtos;
+using Pokedex.Application.Translation;
+using Pokedex.Application.Translation.Dtos;
 using Pokedex.Domain;
 using Pokedex.Infrastructure.WebRequests;
 
@@ -45,6 +47,8 @@ namespace Pokedex.API
                     {
                         AutomaticDecompression = DecompressionMethods.Brotli
                     });
+
+            services.AddHttpClient<IReader<TranslationRequest, TranslationResult>, FunTranslationClient>();
 
             services.AddScoped<IMapper<Pokemon, PokemonDto>, PokemonMapper>();
             services.AddScoped<IMapper<PokemonSpecies, Pokemon>, PokemonSpeciesMapper>();
