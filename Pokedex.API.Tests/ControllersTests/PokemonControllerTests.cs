@@ -61,7 +61,7 @@ namespace Pokedex.API.Tests.ControllersTests
 
             var getResult = await _controller.Get("name");
 
-            _mockTranslationService.Verify(ts => ts.Translate("description"), Times.Never);
+            _mockTranslationService.Verify(ts => ts.TranslateDescription(pokemon), Times.Never);
         }
 
         [TestMethod]
@@ -120,7 +120,7 @@ namespace Pokedex.API.Tests.ControllersTests
 
             var getResult = await _controller.GetTranslated("name");
 
-            _mockTranslationService.Verify(ts => ts.Translate(pokemon.Description.Text), Times.Once);
+            _mockTranslationService.Verify(ts => ts.TranslateDescription(pokemon), Times.Once);
         }
 
         [TestMethod]
@@ -128,15 +128,18 @@ namespace Pokedex.API.Tests.ControllersTests
         {
             Pokemon pokemon = GetNewPokemon();
             _mockPokemonService.Setup(ps => ps.GetPokemon(It.IsAny<string>())).ReturnsAsync(pokemon);
-            var translation = new TranslatedText("translated description", TranslationType.Shakespeare);
-            _mockTranslationService.Setup(ts => ts.Translate(pokemon.Description.Text))
-                .ReturnsAsync(translation);
+            var translatedPokemon = new Pokemon(
+                pokemon.Name,
+                new TranslatedText("translated description", TranslationType.Shakespeare),
+                pokemon.Habitat,
+                pokemon.IsLegendary);
+            _mockTranslationService.Setup(ts => ts.TranslateDescription(pokemon))
+                .ReturnsAsync(translatedPokemon);
 
             var getResult = await _controller.GetTranslated("name");
 
             _mockTranslatedPokemonMapper.Verify(
-                ts => ts.Map(It.Is<Pokemon>(
-                    p=>p.Description == translation)), 
+                ts => ts.Map(translatedPokemon), 
                 Times.Once);
         }
 
@@ -145,13 +148,18 @@ namespace Pokedex.API.Tests.ControllersTests
         {
             Pokemon pokemon = GetNewPokemon();
             _mockPokemonService.Setup(ps => ps.GetPokemon(It.IsAny<string>())).ReturnsAsync(pokemon);
-            var translation = new TranslatedText("translated description", TranslationType.Shakespeare);
-            _mockTranslationService.Setup(ts => ts.Translate("description"))
-                .ReturnsAsync(translation);
-            _mockPokemonMapper.Setup(pm => pm.Map(pokemon)).Returns(new PokemonDto()
+            var translatedPokemon = new Pokemon(
+                pokemon.Name,
+                new TranslatedText("translated description", TranslationType.Shakespeare),
+                pokemon.Habitat,
+                pokemon.IsLegendary);
+            _mockTranslationService.Setup(ts => ts.TranslateDescription(pokemon))
+                .ReturnsAsync(translatedPokemon);
+            _mockTranslatedPokemonMapper.Setup(pm => pm.Map(pokemon)).Returns(new TranslatedPokemonDto()
             {
                 Name = "name",
                 Description = "translated description",
+                TranslationType = "Shakespeare",
                 Habitat = "habitat",
                 IsLegendary = true
             });
@@ -174,10 +182,14 @@ namespace Pokedex.API.Tests.ControllersTests
                 IsLegendary = true
             };
             _mockPokemonService.Setup(ps => ps.GetPokemon(It.IsAny<string>())).ReturnsAsync(pokemon);
-            var translation = new TranslatedText("translated description", TranslationType.Shakespeare);
-            _mockTranslationService.Setup(ts => ts.Translate("description"))
-                .ReturnsAsync(translation);
-            _mockTranslatedPokemonMapper.Setup(pm => pm.Map(pokemon)).Returns(translatedPokemonDto);
+            var translatedPokemon = new Pokemon(
+                pokemon.Name,
+                new TranslatedText("translated description", TranslationType.Shakespeare),
+                pokemon.Habitat,
+                pokemon.IsLegendary);
+            _mockTranslationService.Setup(ts => ts.TranslateDescription(pokemon))
+                .ReturnsAsync(translatedPokemon);
+            _mockTranslatedPokemonMapper.Setup(pm => pm.Map(translatedPokemon)).Returns(translatedPokemonDto);
 
             var getResult = await _controller.GetTranslated("name");
             var okObjectResult = (OkObjectResult)getResult.Result;

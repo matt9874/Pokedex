@@ -1,10 +1,9 @@
-﻿using Pokedex.Domain;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Pokedex.Application.Translation
 {
     public interface ITranslationService
     {
-        Task<TranslatedText> Translate(string text);
+        Task<Domain.Pokemon> TranslateDescription(Domain.Pokemon text);
     }
 }

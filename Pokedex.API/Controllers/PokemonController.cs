@@ -46,8 +46,7 @@ namespace Pokedex.API.Controllers
             if (pokemon == null)
                 return NotFound();
 
-            TranslatedText translatedDescription = await _translationService.Translate(pokemon.Description.Text);
-            pokemon = new Pokemon(pokemon.Name, translatedDescription, pokemon.Habitat, pokemon.IsLegendary);
+            pokemon = await _translationService.TranslateDescription(pokemon);
 
             TranslatedPokemonDto pokemonDto = _translatedPokemonMapper.Map(pokemon);
 
