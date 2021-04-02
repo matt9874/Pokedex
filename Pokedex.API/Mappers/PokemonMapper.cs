@@ -11,7 +11,7 @@ namespace Pokedex.API.Mappers
             return new PokemonDto()
             {
                 Name = pokemon.Name,
-                Description = pokemon.Description,
+                Description = pokemon.Description.Text,
                 Habitat = pokemon.Habitat.ToString(),
                 IsLegendary = pokemon.IsLegendary
             };

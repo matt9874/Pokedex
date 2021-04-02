@@ -12,7 +12,7 @@ namespace Pokedex.API.Tests.MappersTests
 
         private static readonly Pokemon _legendaryPokemonWithRareHabitat = new Pokemon(
             "pokemon name",
-            "pokemon description",
+            new TranslatedText("pokemon description"),
             "pokemon habitat",
             true
             );

@@ -5,6 +5,7 @@ using Moq;
 using Pokedex.Application.Interfaces;
 using System;
 using System.Threading.Tasks;
+using Pokedex.Domain;
 
 namespace Pokedex.Application.Tests.PokemonTests
 {
@@ -55,7 +56,7 @@ namespace Pokedex.Application.Tests.PokemonTests
             _mockPokemonReader.Setup(pr=>pr.Read(It.IsAny<string>()))
                 .ReturnsAsync(pokemonSpecies);
 
-            var mappedPokemon = new Domain.Pokemon("name", "description", "habitat", true);
+            var mappedPokemon = new Domain.Pokemon("name", new TranslatedText("description"), "habitat", true);
             _mockPokemonMapper.Setup(m => m.Map(It.IsAny<PokemonSpecies>()))
                 .Returns(mappedPokemon);
 

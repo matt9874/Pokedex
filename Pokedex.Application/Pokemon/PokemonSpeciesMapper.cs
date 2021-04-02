@@ -16,7 +16,7 @@ namespace Pokedex.Application.Pokemon
 
             return new Domain.Pokemon(
                 pokemonSpecies.Name,
-                firstEnglishFlavorTextEntry?.FlavorText,
+                new Domain.TranslatedText(firstEnglishFlavorTextEntry?.FlavorText),
                 pokemonSpecies.Habitat?.Name,
                 pokemonSpecies.IsLegendary
                 ); ;

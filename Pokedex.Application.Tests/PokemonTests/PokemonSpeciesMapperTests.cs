@@ -45,7 +45,7 @@ namespace Pokedex.Application.Tests.PokemonTests
             Assert.ThrowsException<ArgumentNullException>(() => _mapper.Map(pokemonSpecies));
         }
 
-        private PokemonSpecies _mewtwoPokemonSpecies = new PokemonSpecies()
+        private static readonly PokemonSpecies _mewtwoPokemonSpecies = new PokemonSpecies()
         {
             Name = "mewtwo",
             FlavorTextEntries = new List<FlavorTextEntry>
@@ -69,11 +69,11 @@ namespace Pokedex.Application.Tests.PokemonTests
         }
 
         [TestMethod]
-        public void Map_PropertiesAllValid_HasCorrectDescription()
+        public void Map_PropertiesAllValid_HasCorrectDescriptionText()
         {
             Domain.Pokemon pokemon = _mapper.Map(_mewtwoPokemonSpecies);
 
-            Assert.AreEqual("Created by a scientist.", pokemon.Description);
+            Assert.AreEqual("Created by a scientist.", pokemon.Description.Text);
         }
 
         [TestMethod]
@@ -93,7 +93,7 @@ namespace Pokedex.Application.Tests.PokemonTests
         }
 
         [TestMethod]
-        public void Map_NullFlavorTextEntries_HasNullDescription()
+        public void Map_NullFlavorTextEntries_HasNullDescriptionText()
         {
             var pokemonSpecies = new PokemonSpecies()
             {
@@ -101,11 +101,11 @@ namespace Pokedex.Application.Tests.PokemonTests
             };
             Domain.Pokemon pokemon = _mapper.Map(pokemonSpecies);
 
-            Assert.IsNull(pokemon.Description);
+            Assert.IsNull(pokemon.Description.Text);
         }
 
         [TestMethod]
-        public void Map_EmptyFlavorTextEntries_HasNullDescription()
+        public void Map_EmptyFlavorTextEntries_HasNullDescriptionText()
         {
             var pokemonSpecies = new PokemonSpecies()
             {
@@ -114,11 +114,11 @@ namespace Pokedex.Application.Tests.PokemonTests
             };
             Domain.Pokemon pokemon = _mapper.Map(pokemonSpecies);
 
-            Assert.IsNull(pokemon.Description);
+            Assert.IsNull(pokemon.Description.Text);
         }
 
         [TestMethod]
-        public void Map_NoEnglishFlavorTextEntry_HasNullDescription()
+        public void Map_NoEnglishFlavorTextEntry_HasNullDescriptionText()
         {
             var pokemonSpecies = new PokemonSpecies()
             {
@@ -134,7 +134,7 @@ namespace Pokedex.Application.Tests.PokemonTests
             };
             Domain.Pokemon pokemon = _mapper.Map(pokemonSpecies);
 
-            Assert.IsNull(pokemon.Description);
+            Assert.IsNull(pokemon.Description.Text);
         }
 
         [TestMethod]

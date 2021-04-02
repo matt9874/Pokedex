@@ -4,19 +4,16 @@ namespace Pokedex.Domain
 {
     public class Pokemon: IEquatable<Pokemon>
     {
-        public Pokemon(string name, string description, string habitat, bool isLegendary)
+        public Pokemon(string name, TranslatedText description, string habitat, bool isLegendary)
         {
-            if (name == null)
-                throw new ArgumentNullException("name", "Name of Pokemon cannot be null");
-
-            Name = name;
+            Name = name ?? throw new ArgumentNullException("name", "Name of Pokemon cannot be null");
             Description = description;
             Habitat = habitat;
             IsLegendary = isLegendary;
         }
 
         public string Name { get; }
-        public string Description { get; }
+        public TranslatedText Description { get; }
         public string Habitat { get; }
         public bool IsLegendary { get; }
 
