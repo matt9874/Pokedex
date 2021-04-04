@@ -53,6 +53,10 @@ namespace Pokedex.API
             services.AddScoped<IMapper<Pokemon, PokemonDto>, PokemonMapper>();
             services.AddScoped<IMapper<PokemonSpecies, Pokemon>, PokemonSpeciesMapper>();
             services.AddScoped<IPokemonService, PokemonService>();
+
+            services.AddScoped<IMapper<Pokemon, TranslatedPokemonDto>, TranslatedPokemonMapper>();
+            services.AddScoped<ITranslationService, TranslationService>();
+            services.AddScoped<ITranslatorFactory, TranslatorFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
