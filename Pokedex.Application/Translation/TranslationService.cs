@@ -16,12 +16,19 @@ namespace Pokedex.Application.Translation
             if (pokemon == null || pokemon.Description == null || string.IsNullOrWhiteSpace(pokemon.Description.Text))
                 return pokemon;
 
-
             ITranslator translator = _translatorFactory.CreateTranslator(pokemon);
-            string translatedDescription = await translator.Translate(pokemon.Description.Text);
-            var translatedDescriptionWithType = new TranslatedText(translatedDescription, translator.Type);
+            TranslatedText translatedDescriptionWithType;
 
-            return new Domain.Pokemon(pokemon.Name, translatedDescriptionWithType, pokemon.Habitat, pokemon.IsLegendary);
+            try
+            {
+                string translatedDescription = await translator.Translate(pokemon.Description.Text);
+                translatedDescriptionWithType = new TranslatedText(translatedDescription, translator.Type);
+                return new Domain.Pokemon(pokemon.Name, translatedDescriptionWithType, pokemon.Habitat, pokemon.IsLegendary);
+            }
+            catch
+            {
+                return pokemon;
+            }
         }
     }
 }

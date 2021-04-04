@@ -2,6 +2,7 @@
 using Moq;
 using Pokedex.Application.Translation;
 using Pokedex.Domain;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Pokedex.Application.Tests.TranslationTests
@@ -115,6 +116,42 @@ namespace Pokedex.Application.Tests.TranslationTests
             Domain.Pokemon translatedPokemon = await _translationService.TranslateDescription(pokemon);
 
             Assert.AreEqual(translationType, translatedPokemon.Description.TranslationType);
+        }
+
+        [TestMethod]
+        public async Task TranslateDescription_ThrowsHttpRequestException_ReturnedPokemonHasInputDescription()
+        {
+            string description = "Hello, good evening and welcome.";
+            Domain.Pokemon pokemon = new Domain.Pokemon("n", new TranslatedText(description), "h", true);
+            var mockTranslator = new Mock<ITranslator>();
+            var translationType = TranslationType.Yoda;
+            mockTranslator.Setup(t => t.Type)
+                .Returns(translationType);
+            mockTranslator.Setup(t => t.Translate(It.IsAny<string>())).ThrowsAsync(new HttpRequestException());
+            _mockTranslatorFactory.Setup(tf => tf.CreateTranslator(pokemon))
+                .Returns(mockTranslator.Object);
+
+            Domain.Pokemon translatedPokemon = await _translationService.TranslateDescription(pokemon);
+
+            Assert.AreEqual(description, translatedPokemon.Description.Text);
+        }
+
+        [TestMethod]
+        public async Task TranslateDescription_ThrowsHttpRequestException_ReturnedPokemontDescriptionHasTranslationTypeOfNone()
+        {
+            string description = "Hello, good evening and welcome.";
+            Domain.Pokemon pokemon = new Domain.Pokemon("n", new TranslatedText(description), "h", true);
+            var mockTranslator = new Mock<ITranslator>();
+            var translationType = TranslationType.Yoda;
+            mockTranslator.Setup(t => t.Type)
+                .Returns(translationType);
+            mockTranslator.Setup(t => t.Translate(It.IsAny<string>())).ThrowsAsync(new HttpRequestException());
+            _mockTranslatorFactory.Setup(tf => tf.CreateTranslator(pokemon))
+                .Returns(mockTranslator.Object);
+
+            Domain.Pokemon translatedPokemon = await _translationService.TranslateDescription(pokemon);
+
+            Assert.AreEqual(TranslationType.None, translatedPokemon.Description.TranslationType);
         }
     }
 }
