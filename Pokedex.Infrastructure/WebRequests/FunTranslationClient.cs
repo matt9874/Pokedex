@@ -41,7 +41,9 @@ namespace Pokedex.Infrastructure.WebRequests
             if (!_urlPathMappings.TryGetValue(request.Type, out string lastPartOfUrlPath))
                 throw new NotSupportedException($"Fun translation of type {request.Type} is not supported");
 
-            var urlParameters = new Dictionary<string, string>() { { "text", request.Text } };
+            string formattedText = RemoveIllegalCharacters(request.Text);
+
+            var urlParameters = new Dictionary<string, string>() { { "text", formattedText } };
             string urlPathWithQuery = QueryHelpers.AddQueryString(lastPartOfUrlPath, urlParameters);
             var uri = new Uri(urlPathWithQuery, UriKind.Relative);
 
@@ -51,6 +53,12 @@ namespace Pokedex.Infrastructure.WebRequests
                 Stream stream = await response.Content.ReadAsStreamAsync();
                 return stream.DeserializeFromJson<TranslationResult>(_serializer);
             }
+        }
+
+        private string RemoveIllegalCharacters(string text)
+        {
+            return text.Replace('\r', ' ')
+                .Replace('\n', ' ');
         }
     }
 }
