@@ -10,23 +10,33 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Pokedex.Application.Interfaces;
 using Pokedex.Application.Translation;
-
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Pokedex.Application.Configuration;
+using System.Linq;
 
 namespace Pokedex.Infrastructure.WebRequests
 {
     public abstract class FunTranslationClient: IReader<TranslationRequest, TranslationResult>
     {
         private static readonly string _httpClientName = "funTranslation";
+        private static readonly string _httpClientConfigurationName = "funTranslationClient";
+
         private readonly HttpClient _client;
         private static readonly JsonSerializer _serializer = new JsonSerializer();
         protected abstract string LastPartOfUrlPath { get; }
 
 
-        public FunTranslationClient(IHttpClientFactory clientFactory)
+        public FunTranslationClient(IHttpClientFactory clientFactory, IOptions<HttpClientOptions> options)
         {
             _client = clientFactory.CreateClient(_httpClientName);
-            _client.BaseAddress = new Uri("https://api.funtranslations.com/translate/");
-            _client.Timeout = new TimeSpan(0, 0, 30);
+            HttpClientConfiguration httpClientConfiguration = options?.Value?.ClientConfigurations
+                ?.FirstOrDefault(cc => cc.Name == _httpClientConfigurationName);
+            if (httpClientConfiguration == null)
+                throw new InvalidOperationException($"Cannot create {nameof(FunTranslationClient)} without {nameof(HttpClientConfiguration)}");
+
+            _client.BaseAddress = new Uri(httpClientConfiguration.BaseAddress);
+            _client.Timeout = httpClientConfiguration.Timeout;
             _client.DefaultRequestHeaders.Clear();
             _client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));

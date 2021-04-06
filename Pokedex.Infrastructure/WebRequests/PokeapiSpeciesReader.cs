@@ -1,10 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Pokedex.Application.Configuration;
 using Pokedex.Application.Interfaces;
 using Pokedex.Application.Pokemon.PokeapiDtos;
 using Pokedex.Infrastructure.Extensions;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -14,6 +17,7 @@ namespace Pokedex.Infrastructure.WebRequests
 {
     public class PokeapiSpeciesReader : IReader<string, PokemonSpecies>
     {
+        private static readonly string _httpClientConfigurationName = "pokeapiClient";
         private readonly HttpClient _client;
         private static readonly JsonSerializer _serializer = new JsonSerializer()
         {
@@ -23,11 +27,16 @@ namespace Pokedex.Infrastructure.WebRequests
             }
         };
 
-        public PokeapiSpeciesReader(HttpClient client)
+        public PokeapiSpeciesReader(HttpClient client, IOptions<HttpClientOptions> options)
         {
             _client = client;
-            _client.BaseAddress = new Uri("https://pokeapi.co/api/v2/pokemon-species/");
-            _client.Timeout = new TimeSpan(0, 0, 30);
+            HttpClientConfiguration httpClientConfiguration = options?.Value?.ClientConfigurations
+                ?.FirstOrDefault(cc => cc.Name == _httpClientConfigurationName);
+            if (httpClientConfiguration == null)
+                throw new InvalidOperationException($"Cannot create {nameof(FunTranslationClient)} without {nameof(HttpClientConfiguration)}");
+
+            _client.BaseAddress = new Uri(httpClientConfiguration.BaseAddress);
+            _client.Timeout = httpClientConfiguration.Timeout;
             _client.DefaultRequestHeaders.Clear();
             _client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
