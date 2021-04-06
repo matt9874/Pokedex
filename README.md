@@ -7,15 +7,16 @@ https://dotnet.microsoft.com/download/dotnet-core/3.1
 ```
 
 ## Build and execute
-Open a command prompt and navigate to the Pokedex.API folder. Build the application by executing
+* Open a command prompt and navigate to the Pokedex.API folder.  
+* Build the application:
 ```bash
 dotnet build Pokedex.API.csproj -c Release
 ```
-change folder to the application
+* Change folder:
 ```bash
 cd bin/release/netcoreapp3.1
 ```
-And run the service  by executing
+Run the service:
 ```bash
 dotnet Pokedex.API.dll
 ```
@@ -23,7 +24,7 @@ The application will be listening on http://localhost:5000
 To stop the service, press Ctrl+C
 
 ## Run application using Docker
-Navigate to Pokedex folder (which contains DockerFile) and execute the following:
+Navigate to Pokedex folder (which contains the Dockerfile) and execute the following:
 ```bash
 docker build -t pokedex .
 ```
@@ -33,13 +34,13 @@ docker run -d -p 5000:80 --name pokedexapp pokedex
 Application should now be listening on port 5000
 
 ## Send request for basic pokemon information
-Send a GET message to **http://localhost:5000/pokemon/{pokemon-name}**  
-where **{pokemon-name}** is a string
+Send a GET message to  
+**http://localhost:5000/pokemon/{pokemon-name}**  
+with Accept header is set to **application/json**
 
 ## Send request for pokemon information with translated description
-Send a GET message to **http://localhost:5000/pokemon/translated/{pokemon-name}**  
-where **{pokemon-name}** is a string
-
+Send a GET message to  **http://localhost:5000/pokemon/translated/{pokemon-name}**  
+with Accept header is set to **application/json**
 
 ## Improvements for Production
 * Add logging 
@@ -51,3 +52,4 @@ where **{pokemon-name}** is a string
   * set cache-control header on responses which can be used by client side caches.
   * cache outgoing responses in a shared cache.
 * Consider using a single endpoint for both endpoints implemented so far. Since these endpoints are returning different representations of the same resource, the use of a vendor-specific media type may be preferable to multiple endpoints. 
+* Add Swagger documentation and UI.
