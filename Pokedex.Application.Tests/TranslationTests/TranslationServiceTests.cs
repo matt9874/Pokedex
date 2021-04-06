@@ -1,7 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Pokedex.Application.Interfaces;
 using Pokedex.Application.Translation;
+using Pokedex.Application.Translation.Dtos;
 using Pokedex.Domain;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -10,14 +13,20 @@ namespace Pokedex.Application.Tests.TranslationTests
     [TestClass]
     public class TranslationServiceTests
     {
-        private Mock<ITranslatorFactory> _mockTranslatorFactory;
+        private Mock<ITranslationTypeDecider> _mockTranslationTypeDecider;
+        private Mock<IReader<TranslationRequest, TranslationResult>> _mockTranslator;
+        private Mock<Func<TranslationType, IReader<TranslationRequest, TranslationResult>>> _mockTranslatorFactory;
         private TranslationService _translationService;
 
         [TestInitialize]
         public void TestInit()
         {
-            _mockTranslatorFactory = new Mock<ITranslatorFactory>();
-            _translationService = new TranslationService(_mockTranslatorFactory.Object);
+            _mockTranslationTypeDecider = new Mock<ITranslationTypeDecider>();
+            _mockTranslator = new Mock<IReader<TranslationRequest, TranslationResult>>();
+            _mockTranslatorFactory = new Mock<Func<TranslationType,IReader<TranslationRequest, TranslationResult>>>();
+            _mockTranslatorFactory.Setup(tf => tf.Invoke(It.IsAny<TranslationType>()))
+                .Returns(_mockTranslator.Object);
+            _translationService = new TranslationService(_mockTranslationTypeDecider.Object, _mockTranslatorFactory.Object);
         }
 
         [TestMethod]
@@ -54,34 +63,31 @@ namespace Pokedex.Application.Tests.TranslationTests
         }
 
         [TestMethod]
-        public async Task TranslateDescription_DescriptionCanBeTranslated_TranslatorFactoryWasCalledOnce()
+        public async Task TranslateDescription_DescriptionCanBeTranslated_TranslationTypeDeciderWasCalledOnce()
         {
             string description = "Hello, good evening and welcome.";
             Domain.Pokemon pokemon = new Domain.Pokemon("n", new TranslatedText(description), "h", true);
-
-            var mockTranslator = new Mock<ITranslator>();
-
-            _mockTranslatorFactory.Setup(tf => tf.CreateTranslator(pokemon))
-                .Returns(mockTranslator.Object);
+            _mockTranslationTypeDecider.Setup(ttd => ttd.DecideTranslationType(pokemon))
+                .Returns(TranslationType.Yoda);
 
             Domain.Pokemon translatedPokemon = await _translationService.TranslateDescription(pokemon);
 
-            _mockTranslatorFactory.Verify(tf => tf.CreateTranslator(pokemon), Times.Once);
+            _mockTranslationTypeDecider.Verify(tf => tf.DecideTranslationType(pokemon), Times.Once);
         }
 
         [TestMethod]
-        public async Task TranslateDescription_DescriptionCanBeTranslated_TranslatorWasCalledOnce()
+        public async Task TranslateDescription_DescriptionCanBeTranslated_TranslatorWasCalledOnceWithCorrectRequest()
         {
             string description = "Hello, good evening and welcome.";
             Domain.Pokemon pokemon = new Domain.Pokemon("n", new TranslatedText(description), "h", true);
-            var mockTranslator = new Mock<ITranslator>();
-            
-            _mockTranslatorFactory.Setup(tf => tf.CreateTranslator(pokemon))
-                .Returns(mockTranslator.Object);
+            TranslationType translationType = TranslationType.Yoda;
+            _mockTranslationTypeDecider.Setup(ttd => ttd.DecideTranslationType(pokemon))
+                .Returns(translationType);
 
             Domain.Pokemon translatedPokemon = await _translationService.TranslateDescription(pokemon);
 
-            mockTranslator.Verify(t => t.Translate(description), Times.Once);
+            _mockTranslator.Verify(t => t.Read(It.Is<TranslationRequest>(tr=>tr.Text==description && tr.Type== translationType)), 
+                Times.Once);
         }
 
         [TestMethod]
@@ -89,12 +95,14 @@ namespace Pokedex.Application.Tests.TranslationTests
         {
             string description = "Hello, good evening and welcome.";
             Domain.Pokemon pokemon = new Domain.Pokemon("n", new TranslatedText(description), "h", true);
-            var mockTranslator = new Mock<ITranslator>();
+
+            TranslationType translationType = TranslationType.Yoda;
+            _mockTranslationTypeDecider.Setup(ttd => ttd.DecideTranslationType(pokemon))
+                .Returns(translationType);
+
             string translatedDescription = "Welcome, good evening and hello";
-            mockTranslator.Setup(t => t.Translate(description))
-                .ReturnsAsync(translatedDescription);
-            _mockTranslatorFactory.Setup(tf => tf.CreateTranslator(pokemon))
-                .Returns(mockTranslator.Object);
+            _mockTranslator.Setup(t => t.Read(It.IsAny<TranslationRequest>()))
+                .ReturnsAsync(new TranslationResult() {Contents = new Contents() { Translated = translatedDescription} });
 
             Domain.Pokemon translatedPokemon = await _translationService.TranslateDescription(pokemon);
 
@@ -106,12 +114,14 @@ namespace Pokedex.Application.Tests.TranslationTests
         {
             string description = "Hello, good evening and welcome.";
             Domain.Pokemon pokemon = new Domain.Pokemon("n", new TranslatedText(description), "h", true);
-            var mockTranslator = new Mock<ITranslator>();
+            
             var translationType = TranslationType.Yoda;
-            mockTranslator.Setup(t => t.Type)
+            _mockTranslationTypeDecider.Setup(tf => tf.DecideTranslationType(pokemon))
                 .Returns(translationType);
-            _mockTranslatorFactory.Setup(tf => tf.CreateTranslator(pokemon))
-                .Returns(mockTranslator.Object);
+
+            string translatedDescription = "Welcome, good evening and hello";
+            _mockTranslator.Setup(t => t.Read(It.IsAny<TranslationRequest>()))
+                .ReturnsAsync(new TranslationResult() { Contents = new Contents() { Translated = translatedDescription } });
 
             Domain.Pokemon translatedPokemon = await _translationService.TranslateDescription(pokemon);
 
@@ -123,13 +133,12 @@ namespace Pokedex.Application.Tests.TranslationTests
         {
             string description = "Hello, good evening and welcome.";
             Domain.Pokemon pokemon = new Domain.Pokemon("n", new TranslatedText(description), "h", true);
-            var mockTranslator = new Mock<ITranslator>();
+
             var translationType = TranslationType.Yoda;
-            mockTranslator.Setup(t => t.Type)
+            _mockTranslationTypeDecider.Setup(tf => tf.DecideTranslationType(pokemon))
                 .Returns(translationType);
-            mockTranslator.Setup(t => t.Translate(It.IsAny<string>())).ThrowsAsync(new HttpRequestException());
-            _mockTranslatorFactory.Setup(tf => tf.CreateTranslator(pokemon))
-                .Returns(mockTranslator.Object);
+
+            _mockTranslator.Setup(t => t.Read(It.IsAny<TranslationRequest>())).ThrowsAsync(new HttpRequestException());
 
             Domain.Pokemon translatedPokemon = await _translationService.TranslateDescription(pokemon);
 
@@ -141,13 +150,12 @@ namespace Pokedex.Application.Tests.TranslationTests
         {
             string description = "Hello, good evening and welcome.";
             Domain.Pokemon pokemon = new Domain.Pokemon("n", new TranslatedText(description), "h", true);
-            var mockTranslator = new Mock<ITranslator>();
+
             var translationType = TranslationType.Yoda;
-            mockTranslator.Setup(t => t.Type)
+            _mockTranslationTypeDecider.Setup(tf => tf.DecideTranslationType(pokemon))
                 .Returns(translationType);
-            mockTranslator.Setup(t => t.Translate(It.IsAny<string>())).ThrowsAsync(new HttpRequestException());
-            _mockTranslatorFactory.Setup(tf => tf.CreateTranslator(pokemon))
-                .Returns(mockTranslator.Object);
+
+            _mockTranslator.Setup(t => t.Read(It.IsAny<TranslationRequest>())).ThrowsAsync(new HttpRequestException());
 
             Domain.Pokemon translatedPokemon = await _translationService.TranslateDescription(pokemon);
 

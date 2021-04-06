@@ -48,15 +48,29 @@ namespace Pokedex.API
                         AutomaticDecompression = DecompressionMethods.Brotli
                     });
 
-            services.AddHttpClient<IReader<TranslationRequest, TranslationResult>, FunTranslationClient>();
-
             services.AddScoped<IMapper<Pokemon, PokemonDto>, PokemonMapper>();
             services.AddScoped<IMapper<PokemonSpecies, Pokemon>, PokemonSpeciesMapper>();
             services.AddScoped<IPokemonService, PokemonService>();
 
             services.AddScoped<IMapper<Pokemon, TranslatedPokemonDto>, TranslatedPokemonMapper>();
             services.AddScoped<ITranslationService, TranslationService>();
-            services.AddScoped<ITranslatorFactory, TranslatorFactory>();
+            services.AddScoped<ITranslationTypeDecider, TranslationTypeDecider>();
+            
+            services.AddHttpClient("funTranslation");
+            services.AddScoped<YodaTranslationClient>();
+            services.AddScoped<ShakespeareTranslationClient>();
+
+            services.AddScoped<Func<TranslationType, IReader<TranslationRequest, TranslationResult>>>(sp =>
+                translationType =>
+                {
+                    return translationType switch
+                    {
+                        TranslationType.Yoda => sp.GetRequiredService<YodaTranslationClient>(),
+                        TranslationType.Shakespeare => sp.GetRequiredService<ShakespeareTranslationClient>(),
+                        _ => throw new NotSupportedException($"TranslationType of {translationType} is not supported")
+                    };
+                }
+            );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
